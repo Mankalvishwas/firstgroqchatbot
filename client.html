@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vishwas AI Writer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        h1 { font-size: 2rem; margin-bottom: 10px; color: #00d4ff; }
+        p { color: #aaa; margin-bottom: 40px; }
+        .buttons { display: flex; gap: 20px; margin-bottom: 40px; }
+        .btn { padding: 15px 40px; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; transition: all 0.3s; }
+        .btn-essay { background: #00d4ff; color: #1a1a2e; font-weight: bold; }
+        .btn-poem { background: #ff6b6b; color: white; font-weight: bold; }
+        .btn:hover { transform: scale(1.05); opacity: 0.9; }
+        .box { background: #16213e; border-radius: 15px; padding: 30px; width: 600px; display: none; }
+        .box h2 { margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #0f3460; color: white; font-size: 1rem; margin-bottom: 15px; outline: none; }
+        .submit { background: #00d4ff; color: #1a1a2e; border: none; padding: 12px 30px; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: bold; }
+        .result { margin-top: 20px; background: #0f3460; padding: 15px; border-radius: 8px; line-height: 1.6; display: none; }
+        .loading { color: #00d4ff; display: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Vishwas AI Writer</h1>
+    <p>Choose what you want to generate</p>
+
+    <!-- Two Buttons -->
+    <div class="buttons">
+        <button class="btn btn-essay" onclick="showBox('essay')">📝 Essay</button>
+        <button class="btn btn-poem" onclick="showBox('poem')">🎵 Poem</button>
+    </div>
+
+    <!-- Input Box -->
+    <div class="box" id="box">
+        <h2 id="box-title">Enter Topic</h2>
+        <input type="text" id="topic" placeholder="Enter your topic here..." />
+        <button class="submit" onclick="generate()">Generate</button>
+        <div class="loading" id="loading">⏳ Generating...</div>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        let currentPath = "";
+
+        function showBox(type) {
+            currentPath = type;
+            document.getElementById("box").style.display = "block";
+            document.getElementById("box-title").innerText = 
+                type === "essay" ? "📝 Write Essay About" : "🎵 Write Poem About";
+            document.getElementById("result").style.display = "none";
+            document.getElementById("topic").value = "";
+        }
+
+        async function generate() {
+            const topic = document.getElementById("topic").value;
+            if (!topic) {
+                alert("Please enter a topic!");
+                return;
+            }
+
+            // Show loading
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("result").style.display = "none";
+
+            try {
+                const response = await fetch(`http://localhost:8000/${currentPath}/invoke`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        input: { topic: topic }
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Show result
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("result").style.display = "block";
+                document.getElementById("result").innerText = data.output.content;
+
+            } catch (error) {
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("result").style.display = "block";
+                document.getElementById("result").innerText = "Error! Make sure server.py is running.";
+            }
+        }
+    </script>
+
+</body>
+</html>
